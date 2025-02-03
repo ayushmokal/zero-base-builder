@@ -15,7 +15,7 @@ Breadcrumb.displayName = "Breadcrumb"
 const BreadcrumbList = React.forwardRef<
   HTMLOListElement,
   React.ComponentPropsWithoutRef<"ol">
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <ol
     ref={ref}
     className={cn(
@@ -23,7 +23,9 @@ const BreadcrumbList = React.forwardRef<
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </ol>
 ))
 BreadcrumbList.displayName = "BreadcrumbList"
 

@@ -1,30 +1,112 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
+import { FeaturedArticlesGrid } from "@/components/FeaturedArticlesGrid";
+import { CarouselSection } from "@/components/CarouselSection";
+import { ArticleTabs } from "@/components/ArticleTabs";
+import { BlogSidebar } from "@/components/BlogSidebar";
+import { PopularMobiles } from "@/components/product/PopularMobiles";
+import type { BlogFormData } from "@/types/blog";
 
-const Index = () => {
+export default function Index() {
+  const [activeTab, setActiveTab] = useState("popular");
+
+  const { data: featuredArticles = [] } = useQuery({
+    queryKey: ['featured-articles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .eq('featured', true)
+        .order('created_at', { ascending: false })
+        .limit(6);
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const { data: popularArticles = [] } = useQuery({
+    queryKey: ['popular-articles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .eq('popular', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const { data: recentArticles = [] } = useQuery({
+    queryKey: ['recent-articles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(6);
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
-      <motion.div 
-        className="text-center p-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
-          Welcome to Your App
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-lg mx-auto mb-8">
-          Start building something amazing with this clean foundation.
-        </p>
-        <motion.button
-          className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          Get Started
-        </motion.button>
-      </motion.div>
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      
+      <main className="py-4 sm:py-8">
+        <div className="px-4 sm:container sm:mx-auto">
+          <FeaturedArticlesGrid articles={featuredArticles} />
+        </div>
+
+        <div className="mt-8 sm:mt-12">
+          <div className="w-full h-[120px] sm:h-[200px] bg-gray-200 flex items-center justify-center">
+            <span className="text-gray-500">Advertisement</span>
+          </div>
+        </div>
+
+        <div className="px-4 sm:container sm:mx-auto mt-8 sm:mt-12">
+          <CarouselSection 
+            title="Tech Deals" 
+            linkTo="/tech" 
+            articles={popularArticles.filter(article => article.category === 'TECH')} 
+          />
+
+          <div className="mt-8 sm:mt-12">
+            <PopularMobiles />
+          </div>
+
+          {/* Advertisement above popular/recent tabs */}
+          <div className="mt-8 sm:mt-12">
+            <div className="w-full h-[120px] sm:h-[200px] bg-gray-200 flex items-center justify-center rounded-lg">
+              <span className="text-gray-500">Advertisement</span>
+            </div>
+          </div>
+
+          <div className="mt-8 sm:mt-12 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+            <div className="lg:col-span-8">
+              <ArticleTabs
+                popularArticles={popularArticles}
+                recentArticles={recentArticles}
+                onTabChange={setActiveTab}
+                category="HOME"
+              />
+            </div>
+
+            <div className="lg:col-span-4">
+              <BlogSidebar />
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
-};
-
-export default Index;
+}

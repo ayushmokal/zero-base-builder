@@ -1,27 +1,63 @@
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { MaintenanceProvider } from "@/context/MaintenanceContext";
+import { MaintenanceCheck } from "@/components/MaintenanceCheck";
 import Index from "./pages/Index";
+import CategoryPage from "./pages/CategoryPage";
+import AdminLogin from "./pages/AdminLogin";
+import AdminPanel from "./pages/AdminPanel";
+import EditBlogPage from "./pages/EditBlogPage";
+import PopularProductsPage from "./pages/PopularProductsPage";
+import ArticlePage from "./pages/ArticlePage";
+import GamesPage from "./pages/GamesPage";
+import TechPage from "./pages/TechPage";
+import StocksPage from "./pages/StocksPage";
+import EntertainmentPage from "./pages/EntertainmentPage";
+import GadgetsPage from "./pages/GadgetsPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import ProductReviewsPage from "./pages/ProductReviewsPage";
+import ComparisonPage from "./pages/ComparisonPage";
+import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+function App() {
+  return (
     <TooltipProvider>
       <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <MaintenanceProvider>
+        <BrowserRouter>
+          <MaintenanceCheck>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/category/:category" element={<CategoryPage />} />
+              <Route path="/article/:slug" element={<ArticlePage />} />
+              <Route path="/games" element={<GamesPage />} />
+              <Route path="/tech" element={<TechPage />} />
+              <Route path="/stocks" element={<StocksPage />} />
+              <Route path="/entertainment" element={<EntertainmentPage />} />
+              <Route path="/gadgets" element={<GadgetsPage />} />
+              <Route path="/product/:id" element={<ProductDetailPage />} />
+              <Route path="/product-reviews/:id" element={<ProductReviewsPage />} />
+              <Route path="/comparison" element={<ComparisonPage />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/admin/edit/:id" element={<EditBlogPage />} />
+              <Route path="/admin/popular-products" element={<PopularProductsPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </MaintenanceCheck>
+        </BrowserRouter>
+      </MaintenanceProvider>
     </TooltipProvider>
-  </QueryClientProvider>
-);
+  );
+}
 
 export default App;
