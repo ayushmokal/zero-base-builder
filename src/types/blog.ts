@@ -3,7 +3,7 @@ export interface BlogFormData {
   title: string;
   content: string;
   category: string;
-  subcategory: string;
+  subcategories: string[];  // Changed from subcategory to subcategories array
   author: string;
   image_url: string;
   slug: string;

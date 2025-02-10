@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Clock, Share2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Helmet } from "react-helmet-async";
 
 export default function ArticlePage() {
   const { slug } = useParams();
@@ -77,8 +78,31 @@ export default function ArticlePage() {
 
   if (!blog) return null;
 
+  const cleanDescription = blog.meta_description || blog.content.replace(/<[^>]*>/g, '').slice(0, 160);
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        <title>{blog.meta_title || `${blog.title} | Technikaz`}</title>
+        <meta name="description" content={cleanDescription} />
+        <meta name="keywords" content={blog.meta_keywords || ''} />
+        
+        {/* OpenGraph Meta Tags */}
+        <meta property="og:title" content={blog.meta_title || blog.title} />
+        <meta property="og:description" content={cleanDescription} />
+        <meta property="og:image" content={blog.image_url || '/og-image.png'} />
+        <meta property="og:type" content="article" />
+        <meta property="article:published_time" content={blog.created_at} />
+        <meta property="article:author" content={blog.author} />
+        <meta property="article:section" content={blog.category} />
+        
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={blog.meta_title || blog.title} />
+        <meta name="twitter:description" content={cleanDescription} />
+        <meta name="twitter:image" content={blog.image_url || '/og-image.png'} />
+      </Helmet>
+
       <Navigation />
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -88,9 +112,9 @@ export default function ArticlePage() {
               <Badge variant="default" className="bg-[#00897B] hover:bg-[#00897B]/90">
                 {blog.category}
               </Badge>
-              {blog.subcategory && (
+              {blog.subcategories && blog.subcategories.length > 0 && (
                 <Badge variant="secondary">
-                  {blog.subcategory}
+                  {blog.subcategories.join(', ')}
                 </Badge>
               )}
             </div>

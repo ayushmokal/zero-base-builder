@@ -1,25 +1,43 @@
-import { X } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { MobileProduct, LaptopProduct } from "@/types/product";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { CompareSearchBar } from "./CompareSearchBar";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { X, Plus, ChevronRight } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface ComparisonTableProps {
   selectedProducts: (MobileProduct | LaptopProduct)[];
   currentProduct: MobileProduct | LaptopProduct;
   type: 'mobile' | 'laptop';
   onRemove: (productId: string) => void;
+  onAddProduct: (product: MobileProduct | LaptopProduct) => void;
 }
 
-export function ComparisonTable({ selectedProducts, currentProduct, type, onRemove }: ComparisonTableProps) {
+export function ComparisonTable({ 
+  selectedProducts, 
+  currentProduct, 
+  type, 
+  onRemove,
+  onAddProduct 
+}: ComparisonTableProps) {
+  const [activeProduct, setActiveProduct] = useState<string>(selectedProducts[0]?.id);
+  const [showSearch, setShowSearch] = useState(false);
+
+  // Generate unique keys for each product
+  const generateKey = (prefix: string, productId: string, index: number, subIndex?: number) => {
+    return `${prefix}-${productId}-${index}${subIndex !== undefined ? `-${subIndex}` : ''}`;
+  };
+
   // Fetch expert reviews for all products
   const { data: expertReviews = [] } = useQuery({
     queryKey: ['expert-reviews', selectedProducts.map(p => p.id)],
@@ -149,7 +167,7 @@ export function ComparisonTable({ selectedProducts, currentProduct, type, onRemo
   };
 
   const laptopSpecCategories = {
-    // ... (existing laptop spec categories)
+    // ... laptop spec categories would go here
   };
 
   const specCategories = type === 'laptop' ? laptopSpecCategories : mobileSpecCategories;
@@ -166,126 +184,208 @@ export function ComparisonTable({ selectedProducts, currentProduct, type, onRemo
     return value.toString();
   };
 
-  // Desktop View
-  const DesktopView = () => (
-    <ScrollArea className="w-full">
-      <div className="min-w-[640px]">
-        {/* Product Headers */}
-        <div className="grid grid-cols-4 gap-4 p-6 border-b">
-          <div className="font-semibold text-left text-lg">Specifications</div>
-          {selectedProducts.map((product, index) => (
-            <div key={`header-${product.id}`} className="relative">
-              <div className="flex flex-col items-center">
-                <div className="w-48 h-48 relative mb-3">
-                  <img
-                    src={product.image_url || "/placeholder.svg"}
-                    alt={product.name}
-                    className="w-full h-full object-contain"
-                  />
-                  {index > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute -top-2 -right-2 h-6 w-6"
-                      onClick={() => onRemove(product.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <h3 className="text-sm font-medium text-center line-clamp-2">{product.name}</h3>
-                <p className="text-primary font-bold mt-1">₹{product.price.toLocaleString()}</p>
-              </div>
+  const MobileView = () => (
+    <div className="space-y-4">
+      {/* Product Selection */}
+      <div className="flex gap-2 overflow-x-auto pb-4 px-4 snap-x scrollbar-hide">
+        {selectedProducts.map((product, index) => (
+          <div 
+            key={generateKey('mobile-product', product.id, index)}
+            className={cn(
+              "flex-shrink-0 w-[140px] snap-start",
+              "border rounded-lg p-3 cursor-pointer transition-colors",
+              activeProduct === product.id ? "border-primary bg-primary/5" : "border-gray-200"
+            )}
+            onClick={() => setActiveProduct(product.id)}
+          >
+            <div className="aspect-square mb-2">
+              <img
+                src={product.image_url || "/placeholder.svg"}
+                alt={product.name}
+                className="w-full h-full object-contain"
+              />
             </div>
-          ))}
-        </div>
+            <h3 className="text-sm font-medium line-clamp-2">{product.name}</h3>
+            <p className="text-primary font-bold mt-1 text-sm">₹{product.price.toLocaleString()}</p>
+          </div>
+        ))}
+        {selectedProducts.length < 3 && (
+          <button
+            key="mobile-add-button"
+            onClick={() => setShowSearch(true)}
+            className="flex-shrink-0 w-[140px] aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 text-gray-500 hover:text-primary hover:border-primary transition-colors"
+          >
+            <Plus className="h-6 w-6" />
+            <span className="text-xs font-medium px-2 text-center">Add Product</span>
+          </button>
+        )}
+      </div>
 
-        {/* Specifications Content */}
-        <div className="p-6">
-          {Object.entries(specCategories).map(([categoryKey, category]) => {
-            if (!category) return null;
-            return (
-              <div key={categoryKey} className="mb-8">
-                <h3 className="text-lg font-semibold mb-4 text-left text-gray-900">{category.title}</h3>
-                <div className="space-y-3">
-                  {category.specs.map((spec) => (
-                    <div key={`${categoryKey}-${spec.key}`} className="grid grid-cols-4 gap-4 py-2">
-                      <div className="font-medium text-gray-700 text-left">
-                        {spec.title}
+      {/* Specifications */}
+      <Accordion type="single" collapsible className="w-full">
+        {Object.entries(specCategories).map(([categoryKey, category]) => {
+          if (!category) return null;
+          return (
+            <AccordionItem key={generateKey('mobile-category', categoryKey, 0)} value={categoryKey}>
+              <AccordionTrigger className="text-lg font-semibold px-4">
+                {category.title}
+              </AccordionTrigger>
+              <AccordionContent className="px-4">
+                <div className="space-y-4">
+                  {category.specs.map((spec, specIndex) => (
+                    <div key={generateKey('mobile-spec', categoryKey, specIndex)} className="border rounded-lg p-4">
+                      <h4 className="font-medium mb-3">{spec.title}</h4>
+                      <div className="space-y-3">
+                        {selectedProducts.map((product, productIndex) => (
+                          <div 
+                            key={generateKey('mobile-value', product.id, specIndex)}
+                            className={cn(
+                              "flex items-center justify-between gap-2 p-2 rounded-lg transition-colors",
+                              activeProduct === product.id ? "bg-primary/5" : "hover:bg-gray-50"
+                            )}
+                            onClick={() => setActiveProduct(product.id)}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <img 
+                                src={product.image_url || "/placeholder.svg"}
+                                alt={product.name}
+                                className="w-8 h-8 object-contain"
+                              />
+                              <span className="font-medium truncate">{product.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-600">
+                                {formatValue(spec, product[spec.key as keyof typeof product], product)}
+                              </span>
+                              <ChevronRight className="h-4 w-4 text-gray-400" />
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      {selectedProducts.map((product) => (
-                        <div 
-                          key={`${categoryKey}-${spec.key}-${product.id}`} 
-                          className="text-gray-600 break-words"
-                        >
-                          {formatValue(spec, product[spec.key as keyof typeof product], product)}
-                        </div>
-                      ))}
                     </div>
                   ))}
                 </div>
-                <Separator className="my-6" />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </ScrollArea>
-  );
+              </AccordionContent>
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
 
-  // Mobile View
-  const MobileView = () => (
-    <Accordion type="single" collapsible className="w-full">
-      {Object.entries(specCategories).map(([categoryKey, category]) => {
-        if (!category) return null;
-        return (
-          <AccordionItem key={categoryKey} value={categoryKey}>
-            <AccordionTrigger className="text-lg font-semibold px-4">
-              {category.title}
-            </AccordionTrigger>
-            <AccordionContent className="px-4">
-              <div className="space-y-6">
-                {category.specs.map((spec) => (
-                  <div key={`${categoryKey}-${spec.key}`} className="border rounded-lg p-4">
-                    <h4 className="font-medium mb-3">{spec.title}</h4>
-                    <div className="space-y-3">
-                      {selectedProducts.map((product) => (
-                        <div 
-                          key={`${categoryKey}-${spec.key}-${product.id}-mobile`} 
-                          className="flex items-center justify-between gap-4 text-sm"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <img 
-                              src={product.image_url || "/placeholder.svg"}
-                              alt={product.name}
-                              className="w-8 h-8 object-contain"
-                            />
-                            <span className="font-medium truncate">{product.name}</span>
-                          </div>
-                          <span className="text-gray-600">
-                            {formatValue(spec, product[spec.key as keyof typeof product], product)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        );
-      })}
-    </Accordion>
+      {/* Search Dialog */}
+      {showSearch && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-white w-full sm:w-[400px] sm:rounded-lg">
+            <div className="p-4 border-b">
+              <h3 className="text-lg font-semibold">Add Product to Compare</h3>
+            </div>
+            <div className="p-4">
+              <CompareSearchBar
+                type={type}
+                onProductSelect={(product) => {
+                  onAddProduct(product);
+                  setShowSearch(false);
+                }}
+                currentProductId={currentProduct.id}
+              />
+            </div>
+            <div className="p-4 bg-gray-50 sm:rounded-b-lg">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowSearch(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   return (
     <>
-      {/* Desktop View - Hidden on Mobile */}
       <div className="hidden md:block">
-        <DesktopView />
-      </div>
+        <ScrollArea className="w-full">
+          <div className="min-w-[640px]">
+            {/* Product Headers */}
+            <div className="grid grid-cols-4 gap-4 p-6 border-b">
+              <div className="font-semibold text-left text-lg">Specifications</div>
+              {selectedProducts.map((product, index) => (
+                <div key={generateKey('header', product.id, index)} className="relative">
+                  <div className="flex flex-col items-center">
+                    <div className="w-48 h-48 relative mb-3">
+                      <img
+                        src={product.image_url || "/placeholder.svg"}
+                        alt={product.name}
+                        className="w-full h-full object-contain"
+                      />
+                      {product.id !== currentProduct.id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-6 w-6"
+                          onClick={() => onRemove(product.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <h3 className="text-sm font-medium text-center line-clamp-2">{product.name}</h3>
+                    <p className="text-primary font-bold mt-1">₹{product.price.toLocaleString()}</p>
+                  </div>
+                </div>
+              ))}
+              {selectedProducts.length < 3 && (
+                <div key="add-product-slot" className="flex flex-col items-center justify-center">
+                  <div className="w-48 h-48 border-2 border-dashed rounded-lg flex items-center justify-center p-4">
+                    <CompareSearchBar
+                      type={type}
+                      onProductSelect={onAddProduct}
+                      currentProductId={currentProduct.id}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
 
-      {/* Mobile View - Hidden on Desktop */}
+            {/* Specifications Content */}
+            <div className="p-6">
+              {Object.entries(specCategories).map(([categoryKey, category], categoryIndex) => {
+                if (!category) return null;
+                return (
+                  <div key={`category-${categoryKey}-${categoryIndex}`} className="mb-8">
+                    <h3 className="text-lg font-semibold mb-4 text-left text-gray-900">{category.title}</h3>
+                    <div className="space-y-3">
+                      {category.specs.map((spec, specIndex) => (
+                        <div key={`spec-${categoryKey}-${specIndex}`} className="grid grid-cols-4 gap-4 py-2">
+                          <div className="font-medium text-gray-700 text-left">
+                            {spec.title}
+                          </div>
+                          {selectedProducts.map((product, productIndex) => (
+                            <div 
+                              key={`value-${product.id}-${specIndex}-${productIndex}`}
+                              className="text-gray-600 break-words"
+                            >
+                              {formatValue(spec, product[spec.key as keyof typeof product], product)}
+                            </div>
+                          ))}
+                          {selectedProducts.length < 3 && (
+                            <div key={`empty-${spec.key}-${specIndex}`} className="text-gray-400 italic">
+                              -
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <Separator className="my-6" />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </ScrollArea>
+      </div>
       <div className="md:hidden">
         <MobileView />
       </div>

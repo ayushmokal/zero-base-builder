@@ -29,12 +29,12 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Links and Company Sections - Centered */}
-          <div className="flex flex-1 justify-center gap-20">
+          {/* Links and Company Sections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-1">
             {/* Links Column */}
             <div>
-              <h3 className="text-[#00E0FF] font-medium mb-4 text-lg text-left">Links</h3>
-              <ul className="space-y-3 text-left">
+              <h3 className="text-[#00E0FF] font-medium mb-4 text-lg">Links</h3>
+              <ul className="space-y-3">
                 <li><Link to="/games" className="hover:text-[#00E0FF]">Games</Link></li>
                 <li><Link to="/tech" className="hover:text-[#00E0FF]">Tech</Link></li>
                 <li><Link to="/entertainment" className="hover:text-[#00E0FF]">Entertainment</Link></li>
@@ -45,8 +45,8 @@ export function Footer() {
 
             {/* Company Column */}
             <div>
-              <h3 className="text-[#00E0FF] font-medium mb-4 text-lg text-left">Company</h3>
-              <ul className="space-y-3 text-left">
+              <h3 className="text-[#00E0FF] font-medium mb-4 text-lg">Company</h3>
+              <ul className="space-y-3">
                 <li><Link to="/about" className="hover:text-[#00E0FF]">About Us</Link></li>
                 <li><Link to="/contact" className="hover:text-[#00E0FF]">Contact Us</Link></li>
                 <li><Link to="/privacy" className="hover:text-[#00E0FF]">Privacy Policy</Link></li>
@@ -58,7 +58,7 @@ export function Footer() {
 
         {/* Bottom Section with Social Links and Copyright */}
         <div className="border-t border-white/10">
-          <div className="container mx-auto py-4">
+          <div className="py-4">
             {/* Social Links */}
             <div className="flex gap-4 mb-4">
               <Link to="#" className="hover:text-[#00E0FF]">

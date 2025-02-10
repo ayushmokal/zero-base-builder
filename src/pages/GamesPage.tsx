@@ -48,7 +48,8 @@ export default function GamesPage() {
         .order('created_at', { ascending: false });
       
       if (platform !== "ALL") {
-        query = query.eq('subcategory', platform);
+        // Use contains operator for array column
+        query = query.contains('subcategories', [platform]);
       }
       
       const { data, error } = await query;

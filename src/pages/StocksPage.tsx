@@ -10,8 +10,10 @@ import { ArticleTabs } from "@/components/ArticleTabs";
 import { BlogSidebar } from "@/components/BlogSidebar";
 import { CategoryHeader } from "@/components/CategoryHeader";
 
+type StocksSubcategory = "Market News" | "Analysis" | "IPO" | "Crypto";
+
 export default function StocksPage() {
-  const [subcategory, setSubcategory] = useState<"ALL" | string>("ALL");
+  const [subcategory, setSubcategory] = useState<StocksSubcategory>("Market News");
   const [activeTab, setActiveTab] = useState("popular");
 
   const { data: featuredArticles = [] } = useQuery({
@@ -32,17 +34,13 @@ export default function StocksPage() {
   const { data: articles = [] } = useQuery({
     queryKey: ['stocks-articles', subcategory],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('blogs')
         .select('*')
         .eq('category', 'STOCKS')
+        .contains('subcategories', [subcategory])
         .order('created_at', { ascending: false });
       
-      if (subcategory !== "ALL") {
-        query = query.eq('subcategory', subcategory);
-      }
-      
-      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     }
@@ -65,12 +63,10 @@ export default function StocksPage() {
       />
 
       <main className="container mx-auto px-4 py-8">
-        {subcategory === "ALL" && mainFeaturedArticle && (
-          <CategoryHero 
-            featuredArticle={mainFeaturedArticle} 
-            gridArticles={gridFeaturedArticles} 
-          />
-        )}
+        <CategoryHero 
+          featuredArticle={mainFeaturedArticle} 
+          gridArticles={gridFeaturedArticles} 
+        />
 
         <ArticleGrid articles={articles.slice(0, 4)} />
 

@@ -25,7 +25,7 @@ export function BlogForm({ initialData, mode = 'create' }: BlogFormProps) {
       title: "",
       content: "",
       category: "",
-      subcategory: "",
+      subcategories: [], // Initialize as empty array
       author: "",
       image_url: "",
       slug: "",

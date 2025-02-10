@@ -16,8 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ProductGalleryTabs } from "./ProductGalleryTabs";
+import { Separator } from "@/components/ui/separator";
 
 interface ProductContentProps {
   product: LaptopProduct | MobileProduct;
@@ -27,17 +26,13 @@ interface ProductContentProps {
 
 export function ProductContent({ product: initialProduct, type }: ProductContentProps) {
   const [currentProduct, setCurrentProduct] = useState(initialProduct);
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const isLaptop = type === 'laptop';
   const isMobile = type === 'mobile';
 
-  // Define allImages array
-  const allImages = [currentProduct.image_url, ...(currentProduct.gallery_images || [])].filter(Boolean) as string[];
-
-  // Query for affiliate link
-  const { data: affiliateLink, isLoading: isLoadingAffiliateLink } = useQuery({
+  // Query for affiliate link with proper error handling
+  const { data: affiliateData, isLoading: isLoadingAffiliateLink } = useQuery({
     queryKey: ['affiliate-link', currentProduct.id],
     queryFn: async () => {
       try {
@@ -49,15 +44,16 @@ export function ProductContent({ product: initialProduct, type }: ProductContent
 
         if (error) {
           console.error('Error fetching affiliate link:', error);
-          return null;
+          return { affiliate_link: null };
         }
 
-        return data?.affiliate_link;
+        return { affiliate_link: data?.affiliate_link || null };
       } catch (error) {
         console.error('Error in affiliate link query:', error);
-        return null;
+        return { affiliate_link: null };
       }
-    }
+    },
+    initialData: { affiliate_link: null }
   });
 
   const handleVariantChange = (variant: LaptopProduct | MobileProduct) => {
@@ -74,8 +70,8 @@ export function ProductContent({ product: initialProduct, type }: ProductContent
   };
 
   const handleBuyNow = () => {
-    if (affiliateLink) {
-      window.open(affiliateLink, '_blank');
+    if (affiliateData?.affiliate_link) {
+      window.open(affiliateData.affiliate_link, '_blank');
     } else if (currentProduct.buy_link) {
       window.open(currentProduct.buy_link, '_blank');
     } else {
@@ -126,13 +122,13 @@ export function ProductContent({ product: initialProduct, type }: ProductContent
               <div>
                 <Button 
                   size="lg"
-                  className={`w-full md:w-auto ${affiliateLink ? 'bg-[#FF9900] hover:bg-[#FF9900]/90' : 'bg-gray-400 hover:bg-gray-500'}`}
+                  className={`w-full md:w-auto ${affiliateData?.affiliate_link ? 'bg-[#FF9900] hover:bg-[#FF9900]/90' : 'bg-gray-400 hover:bg-gray-500'}`}
                   onClick={handleBuyNow}
                   disabled={isLoadingAffiliateLink}
                 >
                   {isLoadingAffiliateLink ? (
                     <LoadingSpinner size="sm" className="mr-2" />
-                  ) : affiliateLink ? (
+                  ) : affiliateData?.affiliate_link ? (
                     <>
                       <img 
                         src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg"
@@ -218,38 +214,13 @@ export function ProductContent({ product: initialProduct, type }: ProductContent
         </div>
       </section>
 
-      {/* Pictures Section */}
-      <section id="pictures" className="scroll-mt-32">
-        <h2 className="text-2xl font-bold mb-6 text-left">Product Pictures</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {allImages.map((image, index) => (
-            <div 
-              key={index} 
-              className="aspect-square rounded-lg border overflow-hidden cursor-pointer"
-              onClick={() => setIsGalleryOpen(true)}
-            >
-              <img
-                src={image}
-                alt={`${currentProduct.name} - View ${index + 1}`}
-                className="w-full h-full object-contain p-2"
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Gallery Modal */}
-      <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto p-0">
-          <ProductGalleryTabs
-            mainImage={currentProduct.image_url}
-            productName={currentProduct.name}
-            galleryImages={currentProduct.gallery_images}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {isMobile && <PopularMobiles />}
+      {/* Popular Mobiles Section */}
+      {isMobile && (
+        <>
+          <Separator className="my-8 sm:my-12" />
+          <PopularMobiles />
+        </>
+      )}
     </div>
   );
 }

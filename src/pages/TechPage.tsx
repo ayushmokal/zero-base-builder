@@ -10,10 +10,10 @@ import { ArticleTabs } from "@/components/ArticleTabs";
 import { BlogSidebar } from "@/components/BlogSidebar";
 import { CategoryHeader } from "@/components/CategoryHeader";
 
-type TechSubcategory = "ALL" | "Tech Deals" | "News";
+type TechSubcategory = "Tech Deals" | "News";
 
 export default function TechPage() {
-  const [subcategory, setSubcategory] = useState<TechSubcategory>("ALL");
+  const [subcategory, setSubcategory] = useState<TechSubcategory>("Tech Deals");
   const [activeTab, setActiveTab] = useState("popular");
 
   // Query for category-specific featured articles
@@ -42,17 +42,12 @@ export default function TechPage() {
     queryKey: ['tech-articles', subcategory],
     queryFn: async () => {
       console.log('Fetching tech articles with subcategory:', subcategory);
-      let query = supabase
+      const { data, error } = await supabase
         .from('blogs')
         .select('*')
         .eq('category', 'TECH')
+        .contains('subcategories', [subcategory])
         .order('created_at', { ascending: false });
-      
-      if (subcategory !== "ALL") {
-        query = query.eq('subcategory', subcategory);
-      }
-      
-      const { data, error } = await query;
       
       if (error) {
         console.error('Error fetching tech articles:', error);
@@ -80,12 +75,10 @@ export default function TechPage() {
       />
 
       <main className="container mx-auto px-4 py-8">
-        {subcategory === "ALL" && mainFeaturedArticle && (
-          <CategoryHero 
-            featuredArticle={mainFeaturedArticle} 
-            gridArticles={gridFeaturedArticles} 
-          />
-        )}
+        <CategoryHero 
+          featuredArticle={mainFeaturedArticle} 
+          gridArticles={gridFeaturedArticles} 
+        />
 
         <ArticleGrid articles={articles.slice(0, 4)} />
 

@@ -34,7 +34,8 @@ export function ProductGallery({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
-  const allImages = [mainImage, ...(galleryImages || [])].filter(Boolean) as string[];
+  // Deduplicate and filter out null/undefined/empty values
+  const allImages = Array.from(new Set([mainImage, ...(galleryImages || [])])).filter(Boolean) as string[];
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
@@ -74,7 +75,7 @@ export function ProductGallery({
         <AspectRatio ratio={1}>
           <img
             src={allImages[currentIndex]}
-            alt={productName}
+            alt={`${productName} - View ${currentIndex + 1}`}
             className="w-full h-full object-contain p-4"
             onClick={() => setIsGalleryOpen(true)}
           />
@@ -103,10 +104,10 @@ export function ProductGallery({
 
       {/* Thumbnail Gallery */}
       {allImages.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {allImages.map((image, index) => (
             <button
-              key={`thumb-${index}`}
+              key={`${image}-${index}`}
               onClick={() => setCurrentIndex(index)}
               className={cn(
                 "flex-shrink-0 w-16 h-16 rounded-lg border overflow-hidden",
@@ -117,6 +118,7 @@ export function ProductGallery({
                 src={image}
                 alt={`${productName} view ${index + 1}`}
                 className="w-full h-full object-contain p-2"
+                loading="lazy"
               />
             </button>
           ))}

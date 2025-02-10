@@ -65,7 +65,7 @@ export default function GadgetsPage() {
         .from('blogs')
         .select('*')
         .eq('category', 'GADGETS')
-        .eq('subcategory', subcategory)
+        .contains('subcategories', [subcategory])
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -265,10 +265,10 @@ export default function GadgetsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
-          <ProductGrids />
-          <div className="lg:col-span-4 sticky top-4">
-            <BlogSidebar />
-          </div>
+            <ProductGrids />
+            <div className="lg:col-span-4 sticky top-4">
+              <BlogSidebar />
+            </div>
           </div>
         )}
       </main>

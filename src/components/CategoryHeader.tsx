@@ -23,15 +23,6 @@ export function CategoryHeader({
           
           {/* Subcategories centered */}
           <div className="flex gap-4 sm:gap-8 overflow-x-auto pb-2 sm:pb-0 justify-center flex-1">
-            <button
-              onClick={() => onSubcategoryChange("ALL")}
-              className={cn(
-                "text-sm sm:text-lg font-medium whitespace-nowrap hover:text-primary transition-colors hover:border-b-2 hover:border-primary",
-                selectedSubcategory === "ALL" && "text-primary border-b-2 border-primary" 
-              )}
-            >
-              All
-            </button>
             {subcategories.map((sub) => (
               <button
                 key={sub}

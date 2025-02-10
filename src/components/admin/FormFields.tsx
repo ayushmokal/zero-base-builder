@@ -101,10 +101,23 @@ export function FormFields({ form, selectedCategory, onCategoryChange, onImageCh
                         <FormLabel className="text-left">Meta Title</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Enter meta title (recommended: 50-60 characters)" 
+                            placeholder="Enter meta title (max 60 characters)" 
                             {...field} 
+                            maxLength={60}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              const input = e.target.value;
+                              if (input.length > 60) {
+                                e.target.setCustomValidity('Meta title should be under 60 characters');
+                              } else {
+                                e.target.setCustomValidity('');
+                              }
+                            }}
                           />
                         </FormControl>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {field.value?.length || 0}/60 characters
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -118,10 +131,23 @@ export function FormFields({ form, selectedCategory, onCategoryChange, onImageCh
                         <FormLabel className="text-left">Meta Description</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Enter meta description (recommended: 150-160 characters)" 
+                            placeholder="Enter meta description (max 160 characters)" 
                             {...field} 
+                            maxLength={160}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              const input = e.target.value;
+                              if (input.length > 160) {
+                                e.target.setCustomValidity('Meta description should be under 160 characters');
+                              } else {
+                                e.target.setCustomValidity('');
+                              }
+                            }}
                           />
                         </FormControl>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {field.value?.length || 0}/160 characters
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -135,10 +161,13 @@ export function FormFields({ form, selectedCategory, onCategoryChange, onImageCh
                         <FormLabel className="text-left">Meta Keywords</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Enter keywords separated by commas" 
+                            placeholder="Enter keywords separated by commas (e.g., tech, gadgets, review)" 
                             {...field} 
                           />
                         </FormControl>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Add relevant keywords separated by commas
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}

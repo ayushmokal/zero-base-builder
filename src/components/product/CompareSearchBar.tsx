@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileProduct, LaptopProduct } from "@/types/product";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Plus, Search } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -62,10 +62,9 @@ export function CompareSearchBar({ type, onProductSelect, currentProductId }: Co
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-start text-left h-12 px-4"
+            className="w-full justify-center h-12 px-4"
           >
-            <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
-            {searchQuery || "Search products to compare..."}
+            <Plus className="h-5 w-5" />
           </Button>
         </PopoverTrigger>
         <PopoverContent 

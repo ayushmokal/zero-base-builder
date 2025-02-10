@@ -39,7 +39,8 @@ export default function EntertainmentPage() {
         .order('created_at', { ascending: false });
       
       if (subcategory !== "ALL") {
-        query = query.eq('subcategory', subcategory);
+        // Use contains operator for array column
+        query = query.contains('subcategories', [subcategory]);
       }
       
       const { data, error } = await query;
